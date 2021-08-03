@@ -3,7 +3,7 @@ name: "Bicep"
 env: 
   TEMPLATE_NAME: 'storage.bicep'
   PARAMETERS: '@storage.parameters.json'
-  RESOURCE_GROUP_NAME: 'adam-bicep-1'
+  RESOURCE_GROUP_NAME: 'adam-bicep-cicd'
 
 on:
   push:
