@@ -1,0 +1,61 @@
+name: "Bicep"
+
+env: 
+  TEMPLATE_NAME: 'storage.bicep'
+  PARAMETERS: '@storage.parameters.json'
+  RESOURCE_GROUP_NAME: 'ase-v2-demo-rg'
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  terraform:
+    name: "Bicep"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Bicep Whatif
+        id: whatif
+        if: github.event_name == 'pull_request'
+        run: |
+          az deployment group \
+          what-if --template-file ${{ env.TEMPLATE_NAME }} \
+          --parameters ${{ env.PARAMETERS }} \
+          --resource-group ${{ env.RESOURCE_GROUP_NAME }}
+        continue-on-error: true
+
+      - uses: actions/github-script@0.9.0
+        if: github.event_name == 'pull_request'
+        env:
+          WHATIF: "whatif\n${{ steps.whatif.outputs.stdout }}"
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const output = `#### Bicep WhatIf 📖\`${{ steps.whatif.outcome }}\`
+            <details><summary>Show WhatIf</summary>
+            \`\`\`${process.env.WHATIF}\`\`\`
+            
+            </details>
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
+      - name: Bicep WhatIf Status
+        if: steps.whatif.outcome == 'failure'
+        run: exit 1
+
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: echo 'hello world'
