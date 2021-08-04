@@ -22,6 +22,9 @@ jobs:
       - uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
+      
+      - name: CLI Config
+        run: az config set core.no_color=yes
 
       - name: Bicep Whatif
         id: whatif
@@ -30,8 +33,7 @@ jobs:
           az deployment group \
           what-if --template-file ${{ env.TEMPLATE_NAME }} \
           --parameters ${{ env.PARAMETERS }} \
-          --resource-group ${{ env.RESOURCE_GROUP_NAME }} \
-          --no-pretty-print
+          --resource-group ${{ env.RESOURCE_GROUP_NAME }}
         continue-on-error: true
 
       - uses: actions/github-script@0.9.0
