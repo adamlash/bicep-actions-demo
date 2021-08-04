@@ -40,12 +40,8 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const output = `#### Bicep WhatIf 📖\`${{ steps.whatif.outcome }}\`
-            <details><summary>Show WhatIf</summary>
-            \`${ process.env.WHATIF }\`
-            
-            </details>
-            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+            const output = ` #### Bicep WhatIf 📖\`${{ steps.whatif.outcome }}\`
+            \`\`\`${process.env.WHATIF}\`\`\` `;
             github.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
