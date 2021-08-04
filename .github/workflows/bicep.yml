@@ -30,18 +30,18 @@ jobs:
           az deployment group \
           what-if --template-file ${{ env.TEMPLATE_NAME }} \
           --parameters ${{ env.PARAMETERS }} \
-          --resource-group ${{ env.RESOURCE_GROUP_NAME }}
+          --resource-group ${{ env.RESOURCE_GROUP_NAME }} >> $WHATIF
         continue-on-error: true
 
       - uses: actions/github-script@0.9.0
         if: github.event_name == 'pull_request'
-        env:
-          WHATIF: "${{ steps.whatif.outputs.stderr }}\n${{ steps.whatif.outputs.stdout }}"
+        # env:
+        #   WHATIF: "${{ steps.whatif.outputs.stderr }}\n${{ steps.whatif.outputs.stdout }}"
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const output = ` #### Bicep WhatIf 📖\`${{ steps.whatif.outcome }}\`
-            \`\`\`${process.env.WHATIF}\`\`\` `;
+            \`\`\`${env.WHATIF}\`\`\` `;
             github.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
