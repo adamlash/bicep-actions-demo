@@ -47,7 +47,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const output = ` #### Bicep WhatIf 📖\`${{ steps.whatif.outcome }}\`
-            \`\`\`${env.WHATIF}\`\`\` `;
+            \`\`\`${process.env.WHATIF}\`\`\` `;
             github.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
