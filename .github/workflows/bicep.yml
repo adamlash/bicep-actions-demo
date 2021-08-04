@@ -27,10 +27,10 @@ jobs:
         id: whatif
         if: github.event_name == 'pull_request'
         run: |
-          az deployment group \
+          export WHATIF=$(az deployment group \
           what-if --template-file ${{ env.TEMPLATE_NAME }} \
           --parameters ${{ env.PARAMETERS }} \
-          --resource-group ${{ env.RESOURCE_GROUP_NAME }} > $WHATIF
+          --resource-group ${{ env.RESOURCE_GROUP_NAME }})
         continue-on-error: true
 
       - uses: actions/github-script@0.9.0
