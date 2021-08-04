@@ -22,30 +22,32 @@ jobs:
       - uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
+      
+      - name: CLI Config
+        run: az config set core.no_color=yes
 
       - name: Bicep Whatif
         id: whatif
         if: github.event_name == 'pull_request'
         run: |
-          az deployment group \
+          WHATIF=$(az deployment group \
           what-if --template-file ${{ env.TEMPLATE_NAME }} \
           --parameters ${{ env.PARAMETERS }} \
-          --resource-group ${{ env.RESOURCE_GROUP_NAME }}
+          --resource-group ${{ env.RESOURCE_GROUP_NAME }})
+          echo "WHATIF<<EOF" >> $GITHUB_ENV
+          echo "$WHATIF" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
         continue-on-error: true
 
       - uses: actions/github-script@0.9.0
         if: github.event_name == 'pull_request'
-        env:
-          WHATIF: "${{ steps.whatif.outputs.stdout }}"
+        # env:
+        #   WHATIF: "${{ steps.whatif.outputs.stderr }}\n${{ steps.whatif.outputs.stdout }}"
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const output = `#### Bicep WhatIf 📖\`${{ steps.whatif.outcome }}\`
-            <details><summary>Show WhatIf</summary>
-            \`${ process.env.WHATIF }\`
-            
-            </details>
-            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+            const output = ` #### Bicep WhatIf 📖\`${{ steps.whatif.outcome }}\`
+            \`\`\`${process.env.WHATIF} `;
             github.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
@@ -56,6 +58,10 @@ jobs:
         if: steps.whatif.outcome == 'failure'
         run: exit 1
 
-      - name: Terraform Apply
+      - name: Bicep Deploy
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: echo 'hello world'
+        run: |
+          az deployment group create \
+          --template-file ${{ env.TEMPLATE_NAME }} \
+          --parameters ${{ env.PARAMETERS }} \
+          --resource-group ${{ env.RESOURCE_GROUP_NAME }}
