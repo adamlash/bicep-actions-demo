@@ -42,7 +42,7 @@ jobs:
           script: |
             const output = `#### Bicep WhatIf 📖\`${{ steps.whatif.outcome }}\`
             <details><summary>Show WhatIf</summary>
-            ${process.env.WHATIF}
+            \`${ process.env.WHATIF }\`
             
             </details>
             *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
