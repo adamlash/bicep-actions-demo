@@ -34,6 +34,9 @@ jobs:
           what-if --template-file ${{ env.TEMPLATE_NAME }} \
           --parameters ${{ env.PARAMETERS }} \
           --resource-group ${{ env.RESOURCE_GROUP_NAME }})
+          echo "WHATIF<<EOF" >> $GITHUB_ENV
+          echo "$WHATIF" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
         continue-on-error: true
 
       - uses: actions/github-script@0.9.0
